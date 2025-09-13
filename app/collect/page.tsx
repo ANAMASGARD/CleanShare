@@ -1,11 +1,13 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Trash2, MapPin, CheckCircle, Clock, ArrowRight, Camera, Upload, Loader, Calendar, Weight, Search } from 'lucide-react'
+import { Trash2, MapPin, CheckCircle, Clock, Upload, Loader, Calendar, Weight, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'react-hot-toast'
-import { getWasteCollectionTasks, updateTaskStatus, saveReward, saveCollectedWaste, getUserByEmail } from '@/utils/db/actions'
+import { getWasteCollectionTasks, updateTaskStatus, saveReward, saveCollectedWaste, getUserByEmail, createUser } from '@/utils/db/actions'
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import Image from 'next/image'
+import { useUser } from '@clerk/nextjs'
 
 // Make sure to set your Gemini API key in your environment variables
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -23,6 +25,7 @@ type CollectionTask = {
 const ITEMS_PER_PAGE = 5
 
 export default function CollectPage() {
+  const { user: clerkUser, isLoaded } = useUser()
   const [tasks, setTasks] = useState<CollectionTask[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredWasteType, setHoveredWasteType] = useState<string | null>(null)
@@ -32,21 +35,20 @@ export default function CollectPage() {
 
   useEffect(() => {
     const fetchUserAndTasks = async () => {
+      if (!isLoaded) return
+      
       setLoading(true)
       try {
-        // Fetch user
-        const userEmail = localStorage.getItem('userEmail')
-        if (userEmail) {
-          const fetchedUser = await getUserByEmail(userEmail)
-          if (fetchedUser) {
-            setUser(fetchedUser)
-          } else {
-            toast.error('User not found. Please log in again.')
-            // Redirect to login page or handle this case appropriately
+        // Fetch user using Clerk
+        if (clerkUser?.emailAddresses?.[0]?.emailAddress) {
+          const userEmail = clerkUser.emailAddresses[0].emailAddress
+          const name = clerkUser.fullName || clerkUser.firstName || 'Anonymous User'
+          
+          let fetchedUser = await getUserByEmail(userEmail)
+          if (!fetchedUser) {
+            fetchedUser = await createUser(userEmail, name)
           }
-        } else {
-          toast.error('User not logged in. Please log in.')
-          // Redirect to login page or handle this case appropriately
+          setUser(fetchedUser)
         }
 
         // Fetch tasks
@@ -54,14 +56,14 @@ export default function CollectPage() {
         setTasks(fetchedTasks as CollectionTask[])
       } catch (error) {
         console.error('Error fetching user and tasks:', error)
-        toast.error('Failed to load user data and tasks. Please try again.')
+        toast.error('Failed to load tasks. Please try again.')
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserAndTasks()
-  }, [])
+  }, [clerkUser, isLoaded])
 
   const [selectedTask, setSelectedTask] = useState<CollectionTask | null>(null)
   const [verificationImage, setVerificationImage] = useState<string | null>(null)
@@ -71,7 +73,6 @@ export default function CollectPage() {
     quantityMatch: boolean;
     confidence: number;
   } | null>(null)
-  const [reward, setReward] = useState<number | null>(null)
 
   const handleStatusChange = async (taskId: number, newStatus: CollectionTask['status']) => {
     if (!user) {
@@ -168,7 +169,6 @@ export default function CollectPage() {
           // Save the collected waste
           await saveCollectedWaste(selectedTask.id, user.id, parsedResult)
 
-          setReward(earnedReward)
           toast.success(`Verification successful! You earned ${earnedReward} tokens!`, {
             duration: 5000,
             position: 'top-center',
@@ -329,7 +329,14 @@ export default function CollectPage() {
               </div>
             </div>
             {verificationImage && (
-              <img src={verificationImage} alt="Verification" className="mb-4 rounded-md w-full" />
+              <Image 
+                src={verificationImage} 
+                alt="Verification" 
+                width={500}
+                height={300}
+                className="mb-4 rounded-md w-full" 
+                style={{ objectFit: 'contain' }}
+              />
             )}
             <Button
               onClick={handleVerify}

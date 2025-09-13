@@ -1,10 +1,8 @@
-// @ts-nocheck
 'use client'
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { Menu, Coins, Leaf, Search, Bell, User, ChevronDown, LogIn, LogOut } from "lucide-react"
+import { Menu, Coins, Leaf, Search, Bell, User, ChevronDown, LogIn } from "lucide-react"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,20 +10,25 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { useUser, useAuth, SignInButton, SignOutButton } from '@clerk/nextjs'
+import { useUser, SignInButton, SignOutButton } from '@clerk/nextjs'
 import { useMediaQuery } from "@/hooks/useMediaQuery"
-// Removed direct import of database actions - will use dynamic imports instead
 
 interface HeaderProps {
   onMenuClick: () => void;
-  totalEarnings: number;
 }
 
-export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
+interface AppNotification {
+  id: number;
+  userId: number;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const { user, isSignedIn, isLoaded } = useUser();
-  const { signOut } = useAuth();
-  const pathname = usePathname()
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)")
   const [balance, setBalance] = useState(0)
 

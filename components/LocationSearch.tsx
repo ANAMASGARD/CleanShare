@@ -57,7 +57,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     onChange(newValue);
   };
 
-  const handlePlaceSelect = (place: any) => {
+  const handlePlaceSelect = (place: { place_name: string; center: [number, number] }) => {
     setSearchQuery(place.place_name);
     onChange(place.place_name);
     setIsDropdownOpen(false);

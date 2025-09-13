@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react'
 import { Coins, ArrowUpRight, ArrowDownRight, Gift, AlertCircle, Loader } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getUserByEmail, getRewardTransactions, getAvailableRewards, redeemReward, createTransaction } from '@/utils/db/actions'
+import { getUserByEmail, getRewardTransactions, getAvailableRewards, redeemReward, createTransaction, createUser } from '@/utils/db/actions'
 import { toast } from 'react-hot-toast'
+import { useUser } from '@clerk/nextjs'
 
 type Transaction = {
   id: number
@@ -22,6 +23,7 @@ type Reward = {
 }
 
 export default function RewardsPage() {
+  const { user: clerkUser, isLoaded } = useUser()
   const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null)
   const [balance, setBalance] = useState(0)
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -30,13 +32,22 @@ export default function RewardsPage() {
 
   useEffect(() => {
     const fetchUserDataAndRewards = async () => {
+      if (!isLoaded) return
+      
       setLoading(true)
       try {
-        const userEmail = localStorage.getItem('userEmail')
-        if (userEmail) {
-          const fetchedUser = await getUserByEmail(userEmail)
+        if (clerkUser?.emailAddresses?.[0]?.emailAddress) {
+          const userEmail = clerkUser.emailAddresses[0].emailAddress
+          const name = clerkUser.fullName || clerkUser.firstName || 'Anonymous User'
+          
+          let fetchedUser = await getUserByEmail(userEmail)
+          if (!fetchedUser) {
+            fetchedUser = await createUser(userEmail, name)
+          }
+          
           if (fetchedUser) {
             setUser(fetchedUser)
+            
             const fetchedTransactions = await getRewardTransactions(fetchedUser.id)
             setTransactions(fetchedTransactions as Transaction[])
             const fetchedRewards = await getAvailableRewards(fetchedUser.id)
@@ -45,11 +56,7 @@ export default function RewardsPage() {
               return transaction.type.startsWith('earned') ? acc + transaction.amount : acc - transaction.amount
             }, 0)
             setBalance(Math.max(calculatedBalance, 0)) // Ensure balance is never negative
-          } else {
-            toast.error('User not found. Please log in again.')
           }
-        } else {
-          toast.error('User not logged in. Please log in.')
         }
       } catch (error) {
         console.error('Error fetching user data and rewards:', error)
@@ -60,7 +67,7 @@ export default function RewardsPage() {
     }
 
     fetchUserDataAndRewards()
-  }, [])
+  }, [clerkUser, isLoaded])
 
   const handleRedeemReward = async (rewardId: number) => {
     if (!user) {

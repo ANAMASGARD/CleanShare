@@ -1,8 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { getAllRewards, getUserByEmail } from '@/utils/db/actions'
+import { getAllRewards, getUserByEmail, createUser } from '@/utils/db/actions'
 import { Loader, Award, User, Trophy, Crown } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useUser } from '@clerk/nextjs'
 
 type Reward = {
   id: number
@@ -14,27 +15,32 @@ type Reward = {
 }
 
 export default function LeaderboardPage() {
+  const { user: clerkUser, isLoaded } = useUser()
   const [rewards, setRewards] = useState<Reward[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<{ id: number; email: string; name: string } | null>(null)
 
   useEffect(() => {
     const fetchRewardsAndUser = async () => {
+      if (!isLoaded) return
+      
       setLoading(true)
       try {
         const fetchedRewards = await getAllRewards()
         setRewards(fetchedRewards)
 
-        const userEmail = localStorage.getItem('userEmail')
-        if (userEmail) {
-          const fetchedUser = await getUserByEmail(userEmail)
+        if (clerkUser?.emailAddresses?.[0]?.emailAddress) {
+          const userEmail = clerkUser.emailAddresses[0].emailAddress
+          const name = clerkUser.fullName || clerkUser.firstName || 'Anonymous User'
+          
+          let fetchedUser = await getUserByEmail(userEmail)
+          if (!fetchedUser) {
+            fetchedUser = await createUser(userEmail, name)
+          }
+          
           if (fetchedUser) {
             setUser(fetchedUser)
-          } else {
-            toast.error('User not found. Please log in again.')
           }
-        } else {
-          toast.error('User not logged in. Please log in.')
         }
       } catch (error) {
         console.error('Error fetching rewards and user:', error)
@@ -45,7 +51,7 @@ export default function LeaderboardPage() {
     }
 
     fetchRewardsAndUser()
-  }, [])
+  }, [clerkUser, isLoaded])
 
   return (
     <div className="">

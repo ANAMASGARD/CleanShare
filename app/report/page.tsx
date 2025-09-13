@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {  MapPin, Upload, CheckCircle, Loader } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -8,9 +8,9 @@ import { createUser, getUserByEmail, createReport, getRecentReports } from '@/ut
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast'
 import { useUser } from '@clerk/nextjs'
+import Image from 'next/image'
 
 const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const MapTilerApiKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
 export default function ReportPage() {
   const { user: clerkUser, isLoaded } = useUser();
@@ -189,25 +189,28 @@ export default function ReportPage() {
         newReport.amount,
         preview || undefined,
         verificationResult ? JSON.stringify(verificationResult) : undefined
-      ) as any;
+      );
       
-      const formattedReport = {
-        id: report.id,
-        location: report.location,
-        wasteType: report.wasteType,
-        amount: report.amount,
-        createdAt: report.createdAt.toISOString().split('T')[0]
-      };
-      
-      setReports([formattedReport, ...reports]);
-      setNewReport({ location: '', type: '', amount: '' });
-      setFile(null);
-      setPreview(null);
-      setVerificationStatus('idle');
-      setVerificationResult(null);
-      
-
-      toast.success(`Report submitted successfully! You've earned points for reporting waste.`);
+      if (report) {
+        const formattedReport = {
+          id: report.id,
+          location: report.location,
+          wasteType: report.wasteType,
+          amount: report.amount,
+          createdAt: new Date(report.createdAt).toISOString().split('T')[0]
+        };
+        
+        setReports([formattedReport, ...reports]);
+        setNewReport({ location: '', type: '', amount: '' });
+        setFile(null);
+        setPreview(null);
+        setVerificationStatus('idle');
+        setVerificationResult(null);
+        
+        toast.success(`Report submitted successfully! You've earned points for reporting waste.`);
+      } else {
+        toast.error('Failed to create report. Please try again.');
+      }
     } catch (error) {
       console.error('Error submitting report:', error);
       toast.error('Failed to submit report. Please try again.');
@@ -279,7 +282,14 @@ export default function ReportPage() {
         
         {preview && (
           <div className="mt-4 mb-8">
-            <img src={preview} alt="Waste preview" className="max-w-full h-auto rounded-xl shadow-md" />
+            <Image 
+              src={preview} 
+              alt="Waste preview" 
+              width={500}
+              height={300}
+              className="max-w-full h-auto rounded-xl shadow-md" 
+              style={{ objectFit: 'contain' }}
+            />
           </div>
         )}
         

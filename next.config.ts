@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   },
   images: {
     domains: ['images.unsplash.com', 'api.maptiler.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+    unoptimized: true, // Allow data URLs
+    dangerouslyAllowSVG: true,
   },
 };
 

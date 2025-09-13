@@ -1,5 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -16,7 +17,7 @@ export default function Page() {
           />
 
           <div className="hidden lg:relative lg:block lg:p-12">
-            <a className="block text-white" href="/">
+            <Link className="block text-white" href="/">
               <span className="sr-only">Home</span>
               <svg
                 className="h-8 sm:h-10"
@@ -29,7 +30,7 @@ export default function Page() {
                   fill="currentColor"
                 />
               </svg>
-            </a>
+            </Link>
 
             <h2 className="mt-6 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
               Welcome to CleanShare 🦑

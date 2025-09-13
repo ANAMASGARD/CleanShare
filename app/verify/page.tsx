@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Upload, CheckCircle, XCircle, Loader } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 
 export default function VerifyWastePage() {
   const [file, setFile] = useState<File | null>(null)
@@ -73,7 +74,14 @@ export default function VerifyWastePage() {
         
         {preview && (
           <div className="mt-4 mb-6">
-            <img src={preview} alt="Waste preview" className="max-w-full h-auto rounded-lg" />
+            <Image 
+              src={preview} 
+              alt="Waste preview" 
+              width={500}
+              height={300}
+              className="max-w-full h-auto rounded-lg" 
+              style={{ objectFit: 'contain' }}
+            />
           </div>
         )}
         
