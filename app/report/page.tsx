@@ -88,14 +88,14 @@ export default function ReportPage() {
       ];
 
       const prompt = `You are an expert in waste management and recycling. Analyze this image and provide:
-        1. The type of waste (e.g., plastic, paper, glass, metal, organic)
-        2. An estimate of the quantity or amount (in kg or liters)
-        3. Your confidence level in this assessment (as a percentage)
+        1. The type of waste (e.g., plastic, paper, glass, metal, organic, mixed)
+        2. An estimate of the quantity or amount (be concise, e.g., "5 kg", "2-3 bags", "small pile")
+        3. Your confidence level in this assessment (as a number between 0 and 1)
         
-        Respond in JSON format like this:
+        IMPORTANT: Respond ONLY with valid JSON format, no markdown or extra text:
         {
           "wasteType": "type of waste",
-          "quantity": "estimated quantity with unit",
+          "quantity": "estimated quantity with unit (keep it short)",
           "confidence": confidence level as a number between 0 and 1
         }`;
 
@@ -104,25 +104,64 @@ export default function ReportPage() {
       const text = response.text();
       
       try {
-        const parsedResult = JSON.parse(text);
-        if (parsedResult.wasteType && parsedResult.quantity && parsedResult.confidence) {
-          setVerificationResult(parsedResult);
+        // Clean the response text by removing markdown code blocks
+        let cleanedText = text.trim();
+        
+        // Remove markdown code block markers if present
+        if (cleanedText.startsWith('```json')) {
+          cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanedText.startsWith('```')) {
+          cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+        
+        // Additional cleanup for any remaining markdown or extra characters
+        cleanedText = cleanedText.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+        
+        // Find JSON object boundaries more robustly
+        const jsonStart = cleanedText.indexOf('{');
+        const jsonEnd = cleanedText.lastIndexOf('}');
+        
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+          cleanedText = cleanedText.substring(jsonStart, jsonEnd + 1);
+        }
+        
+        const parsedResult = JSON.parse(cleanedText);
+        if (parsedResult.wasteType && parsedResult.quantity && typeof parsedResult.confidence === 'number') {
+          // Ensure quantity is not too long (truncate if necessary)
+          let quantity = parsedResult.quantity;
+          if (quantity.length > 100) {
+            quantity = quantity.substring(0, 97) + '...';
+          }
+          
+          const result = {
+            wasteType: parsedResult.wasteType,
+            quantity: quantity,
+            confidence: parsedResult.confidence
+          };
+          
+          setVerificationResult(result);
           setVerificationStatus('success');
           setNewReport({
             ...newReport,
-            type: parsedResult.wasteType,
-            amount: parsedResult.quantity
+            type: result.wasteType,
+            amount: result.quantity
           });
+          
+          toast.success('Waste verification completed successfully!');
         } else {
           console.error('Invalid verification result:', parsedResult);
+          toast.error('AI verification returned incomplete data. Please try again.');
           setVerificationStatus('failure');
         }
       } catch (error) {
         console.error('Failed to parse JSON response:', text);
+        console.error('Parse error:', error);
+        toast.error('Failed to process AI response. Please try uploading a different image.');
         setVerificationStatus('failure');
       }
     } catch (error) {
       console.error('Error verifying waste:', error);
+      toast.error('Error connecting to AI service. Please check your internet connection and try again.');
       setVerificationStatus('failure');
     }
   }
