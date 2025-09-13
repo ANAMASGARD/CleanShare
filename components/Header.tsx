@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useUser, SignInButton, SignOutButton } from '@clerk/nextjs'
 import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { ThemeToggle } from "./ThemeToggle"
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -113,7 +114,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" className="mr-2 md:mr-4" onClick={onMenuClick}>
@@ -122,8 +123,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <Link href="/" className="flex items-center">
             <Leaf className="h-6 w-6 md:h-8 md:w-8 text-green-500 mr-1 md:mr-2" />
             <div className="flex flex-col">
-              <span className="font-bold text-base md:text-lg text-gray-800">CleanShare</span>
-              <span className="text-[8px] md:text-[10px] text-gray-500 -mt-1">Made By Gaurav 💝</span>
+              <span className="font-bold text-base md:text-lg text-gray-800 dark:text-gray-200">CleanShare</span>
+              <span className="text-[8px] md:text-[10px] text-gray-500 dark:text-gray-400 -mt-1">Made By Gaurav 💝</span>
             </div>
           </Link>
         </div>
@@ -133,9 +134,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             </div>
           </div>
         )}
@@ -174,11 +175,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="mr-2 md:mr-4 flex items-center bg-gray-100 rounded-full px-2 md:px-3 py-1">
+          <div className="mr-2 md:mr-4 flex items-center bg-gray-100 dark:bg-gray-800 rounded-full px-2 md:px-3 py-1">
             <Coins className="h-4 w-4 md:h-5 md:w-5 mr-1 text-green-500" />
-            <span className="font-semibold text-sm md:text-base text-gray-800">
+            <span className="font-semibold text-sm md:text-base text-gray-800 dark:text-gray-200">
               {balance.toFixed(2)}
             </span>
+          </div>
+          <div className="mr-2 md:mr-3">
+            <ThemeToggle />
           </div>
           {!isSignedIn ? (
             <SignInButton mode="modal">

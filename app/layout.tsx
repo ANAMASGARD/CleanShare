@@ -8,6 +8,7 @@ import Header from "@/components/Header"
 import Sidebar from "@/components/Sidebar"
 import 'leaflet/dist/leaflet.css'
 import { Toaster } from 'react-hot-toast'
+import { Providers } from "@/components/providers"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +17,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-300">
       <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       <div className="flex flex-1">
         <Sidebar open={sidebarOpen} />
@@ -35,11 +36,13 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
-          <LayoutContent>
-            {children}
-          </LayoutContent>
+          <Providers>
+            <LayoutContent>
+              {children}
+            </LayoutContent>
+          </Providers>
           <Toaster />
         </body>
       </html>

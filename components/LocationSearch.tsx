@@ -71,7 +71,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
         value={searchQuery}
         onChange={handleInputChange}
         placeholder={placeholder}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 ${className}`}
+        className={`w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${className}`}
         onFocus={() => {
           if (places.length > 0) {
             setIsDropdownOpen(true);
@@ -80,17 +80,17 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       />
       
       {isDropdownOpen && (places.length > 0 || isLoading) && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
           {isLoading ? (
-            <div className="px-4 py-2 text-gray-500">Searching...</div>
+            <div className="px-4 py-2 text-gray-500 dark:text-gray-400">Searching...</div>
           ) : (
             places.map((place, index) => (
               <div
                 key={index}
-                className="px-4 py-2 cursor-pointer hover:bg-gray-100 transition-colors duration-200"
+                className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 onClick={() => handlePlaceSelect(place)}
               >
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-gray-900 dark:text-gray-100">
                   {place.place_name}
                 </div>
               </div>

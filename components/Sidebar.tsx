@@ -19,7 +19,7 @@ export default function Sidebar({ open }: SidebarProps) {
   const pathname = usePathname()
 
   return (
-    <aside className={`bg-white border-r pt-20 border-gray-200 text-gray-800 w-64 fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+    <aside className={`bg-white dark:bg-gray-900 border-r pt-20 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 w-64 fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
       <nav className="h-full flex flex-col justify-between">
         <div className="px-4 py-6 space-y-8">
           {sidebarItems.map((item) => (
@@ -28,8 +28,8 @@ export default function Sidebar({ open }: SidebarProps) {
                 variant={pathname === item.href ? "secondary" : "ghost"}
                 className={`w-full justify-start py-3 ${
                   pathname === item.href 
-                    ? "bg-green-100 text-green-800" 
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200" 
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`} 
               >
                 <item.icon className="mr-3 h-5 w-5" />
@@ -38,14 +38,14 @@ export default function Sidebar({ open }: SidebarProps) {
             </Link>
           ))}
         </div>
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <Link href="/settings" passHref>
             <Button 
               variant={pathname === "/settings" ? "secondary" : "outline"}
               className={`w-full py-3 ${
                 pathname === "/settings"
-                  ? "bg-green-100 text-green-800"
-                  : "text-gray-600 border-gray-300 hover:bg-gray-100"
+                  ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                  : "text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800"
               }`} 
             >
               <Settings className="mr-3 h-5 w-5" />
